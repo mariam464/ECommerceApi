@@ -1,6 +1,7 @@
 ﻿using ECommerceApi.Data;
 using ECommerceApi.DTO;
 using ECommerceApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -24,7 +25,21 @@ namespace ECommerceApi.Controllers
         public IActionResult GetProducts()
         {
             var products = _db.Products.ToList();
-            return Ok(products);
+            List<ProductInfoDto> productDtos = new List<ProductInfoDto>();
+            foreach (var product in products)
+            {
+                ProductInfoDto productDto = new ProductInfoDto()
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Description = product.Description,
+                    Price = product.Price,
+                    QuantityAvaliable = product.QuantityAvaliable,
+                    CategoryName = _db.Categories.FirstOrDefault(c => c.Id == product.CategoryId)?.Name
+                };
+                productDtos.Add(productDto);
+            }
+            return Ok(productDtos);
         }
         [HttpGet]
         [Route("{id:int}")]
@@ -39,7 +54,16 @@ namespace ECommerceApi.Controllers
                 var product = _db.Products.FirstOrDefault(p => p.Id == id);
                 if (product != null)
                 {
-                    return Ok(product);
+                    ProductInfoDto productDto = new ProductInfoDto()
+                    {
+                        Id = product.Id,
+                        Name = product.Name,
+                        Description = product.Description,
+                        Price = product.Price,
+                        QuantityAvaliable = product.QuantityAvaliable,
+                        CategoryName = _db.Categories.FirstOrDefault(c => c.Id == product.CategoryId)?.Name
+                    };
+                    return Ok(productDto);
                 }
                 else
                 {
@@ -62,8 +86,22 @@ namespace ECommerceApi.Controllers
                 List<Product> products = _db.Products.Where(p => p.Name == name).ToList();
                 if (products != null)
                 {
+                    List<ProductInfoDto> productDtos = new List<ProductInfoDto>();
+                    foreach (var product in products)
+                    {
+                        ProductInfoDto productDto = new ProductInfoDto()
+                        {
+                            Id = product.Id,
+                            Name = product.Name,
+                            Description = product.Description,
+                            Price = product.Price,
+                            QuantityAvaliable = product.QuantityAvaliable,
+                            CategoryName = _db.Categories.FirstOrDefault(c => c.Id == product.CategoryId)?.Name
+                        };
+                        productDtos.Add(productDto);
+                    }
 
-                    return Ok(products);
+                    return Ok(productDtos);
                 }
                 else
                 {
@@ -75,7 +113,7 @@ namespace ECommerceApi.Controllers
         [Route("Category_filter")]
         public IActionResult GetFilteredProductsByCategory()
         {
-            var query = from p in _db.Products
+            var filteredProductsByCategory = from p in _db.Products
                         join c in _db.Categories
                         on p.CategoryId equals c.Id
                         orderby c.Name
@@ -88,8 +126,9 @@ namespace ECommerceApi.Controllers
                             p.QuantityAvaliable,
                             p.Description
                         };
+             
 
-            return Ok(query);
+            return Ok(filteredProductsByCategory);
         }
         [HttpGet]
         [Route("Price_filter")]
@@ -98,8 +137,9 @@ namespace ECommerceApi.Controllers
             var filteredByPrice = _db.Products.OrderBy(p => p.Price);
             return Ok(filteredByPrice);
         }
-  
+
         //for seller ==Authorize
+       
         [HttpPost]
         [Route("")]
         public IActionResult AddProduct([FromBody] CreatedProductDto product)
@@ -144,7 +184,7 @@ namespace ECommerceApi.Controllers
         }
         [HttpPut]
         [Route("Edit/{id}")]
-        public IActionResult EditCategory(int? id, [FromBody] CreatedProductDto product)
+        public IActionResult EditProduct(int? id, [FromBody] CreatedProductDto product)
         {
             if (id == null || id == 0)
             {

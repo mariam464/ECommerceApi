@@ -20,7 +20,29 @@ namespace ECommerceApi.Controllers
         public IActionResult GetCategory()
         {
             var categories = _db.Categories.ToList();
-            return Ok(categories);
+            List<CategoryInfoDto> categoryDtos = new List<CategoryInfoDto>();
+            foreach (var category in categories)
+            {
+                CategoryInfoDto categoryDto = new CategoryInfoDto()
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Products = _db.Products.Where(p => p.CategoryId == category.Id).Select(p => new 
+                    {
+                        p.Id,
+                        p.Name,
+                        p.Description,
+                        p.Price,
+                        p.QuantityAvaliable
+                    }).ToList()
+              
+                       
+                };
+                
+            categoryDtos.Add(categoryDto);
+            }
+
+            return Ok(categoryDtos);
         }
         [HttpGet]
         [Route("{id}")]
@@ -35,7 +57,13 @@ namespace ECommerceApi.Controllers
                 var category = _db.Categories.FirstOrDefault(p => p.Id == id);
                 if (category != null)
                 {
-                    return Ok(category);
+                    CategoryInfoDto categoryDto = new CategoryInfoDto()
+                    {
+                        Id = category.Id,
+                        Name = category.Name,
+                        Products = _db.Products.Where(p => p.CategoryId == category.Id).ToList()
+                    };
+                    return Ok(categoryDto);
                 }
                 else
                 {
