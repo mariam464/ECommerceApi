@@ -20,7 +20,7 @@ A RESTful API for an e-commerce platform built using **ASP.NET Core**. It provid
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/mariam464/ECommerceApi.git
-   cd ecommerce-api
+   cd ECommerceApi
    ```
 
 2. **Set up the database:**
